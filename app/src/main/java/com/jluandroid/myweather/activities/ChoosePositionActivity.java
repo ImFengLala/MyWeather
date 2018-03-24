@@ -36,8 +36,8 @@ public class ChoosePositionActivity extends AppCompatActivity {
         }
     }
 
-    public static void activityStartForResult(Activity activity) {
-        Intent intent = new Intent(activity, ChoosePositionActivity.class);
-        activity.startActivityForResult(intent, GET_POSITION_STRING);
+    public static void activityStartForResult(Activity activityFrom) {
+        Intent intent = new Intent(activityFrom, ChoosePositionActivity.class);
+        activityFrom.startActivityForResult(intent, GET_POSITION_STRING);
     }
 }

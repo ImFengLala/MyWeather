@@ -35,6 +35,8 @@ import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Response;
 
+import static android.app.Activity.RESULT_OK;
+
 /**
  * Created by Fengl on 2018/3/20.
  */
@@ -107,9 +109,10 @@ public class ChooseAreaFragment extends Fragment implements FragmentBackHandler,
                     String result = selectedProvince.getProvinceName() + " "
                                     + selectedCity.getCityName() + " "
                                     + countyList.get(position).getCountyName();
+                    Log.d(TAG, "onItemClick: result的值是" + result + "呀");
                     Intent intent = new Intent();
                     intent.putExtra(String.valueOf((ChoosePositionActivity.GET_POSITION_STRING)), result);
-                    getActivity().setResult(ChoosePositionActivity.GET_POSITION_STRING, intent);
+                    getActivity().setResult(RESULT_OK, intent);
                     getActivity().finish();
                 }
             }

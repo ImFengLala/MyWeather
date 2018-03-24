@@ -27,14 +27,13 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         switch (requestCode) {
-            case ChoosePositionActivity.GET_POSITION_STRING: {
+            case ChoosePositionActivity.GET_POSITION_STRING:
                 if (resultCode == RESULT_OK) {
                     String returnedData = data.getStringExtra(String.valueOf(ChoosePositionActivity.GET_POSITION_STRING));
                     TextView textView = findViewById(R.id.test_textView);
                     textView.setText(returnedData);
+                    break;
                 }
-                break;
-            }
             default:
                 break;
         }
