@@ -33,10 +33,11 @@ public class Utility {
                     province.setProvinceCode(provinceObject.getInt("id"));
                     province.save();
                 }
+                Log.d(TAG, "handleProvinceResponse: JSON解析省级数据完成啦");
                 return true;
             } catch (JSONException e) {
                 e.printStackTrace();
-                Log.e(TAG, "handleProvinceResponse: JSON解析省级数据时出错啦");
+                Log.e(TAG, "handleProvinceResponse: JSON解析省级数据时出错啦", e);
             }
         }
         return false;
@@ -57,10 +58,11 @@ public class Utility {
                     city.setProvinceId(provinceId);
                     city.save();
                 }
+                Log.d(TAG, "handleCityResponse: JSON解析市级数据成功啦");
                 return true;
             } catch (JSONException e) {
                 e.printStackTrace();
-                Log.e(TAG, "handleCityResponse: JSON处理市级数据时出错啦");
+                Log.e(TAG, "handleCityResponse: JSON处理市级数据时出错啦", e);
             }
         }
         return false;
@@ -81,10 +83,11 @@ public class Utility {
                     county.setCityId(cityId);
                     county.save();
                 }
+                Log.d(TAG, "handleCountyResponse: JSON解析县级数据成功啦");
                 return true;
             } catch (JSONException e) {
                 e.printStackTrace();
-                Log.e(TAG, "handleCountyResponse: JSON处理县级数据时出错啦");
+                Log.e(TAG, "handleCountyResponse: JSON处理县级数据时出错啦", e);
             }
         }
         return false;

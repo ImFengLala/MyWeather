@@ -2,4 +2,5 @@
 <resources>
     <string name="app_name">EnWeather</string>
     <string name="back">Back</string>
+    <string name="china">China</string>
 </resources>
