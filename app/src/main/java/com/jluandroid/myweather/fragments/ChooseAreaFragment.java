@@ -2,6 +2,7 @@ package com.jluandroid.myweather.fragments;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -65,14 +66,12 @@ public class ChooseAreaFragment extends Fragment implements FragmentBackHandler,
     private City selectedCity;
     // 当前选中的级别
     private int currentLevel;
-    // 当前View
-    private View mView;
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         Log.d(TAG, "onCreateView: 开始创建界面啦");
-        mView = inflater.inflate(R.layout.choose_area, container, false);
+        View mView = inflater.inflate(R.layout.choose_area, container, false);
         // 初始化UI控件的值
         titleText = mView.findViewById(R.id.title_text_inChooseArea_TextView);
         backButton = mView.findViewById(R.id.back_button_inChooseArea_Button);
@@ -127,6 +126,7 @@ public class ChooseAreaFragment extends Fragment implements FragmentBackHandler,
     // 设置返回按钮的点击事件
     @Override
     public void onClick(View view) {
+        Log.d(TAG, "onClick: 点击了左上的返回按钮啦");
         switch (view.getId()) {
             case R.id.back_button_inChooseArea_Button: {
                 handleBack();
@@ -138,26 +138,47 @@ public class ChooseAreaFragment extends Fragment implements FragmentBackHandler,
     @Override
     public boolean onBackPressed() {
         Log.d(TAG, "onBackPressed: 然后这里才开始真正处理截获到的返回事件啦");
-        if (currentLevel == LEVEL_PROVINCE) {
-            return false;
-        } else {
-            handleBack();
-            return true;
-        }
+        return !(currentLevel == LEVEL_PROVINCE && HttpUtil.requestCount == 0) && handleBack();
     }
 
-    // 返回事件的响应
-    private void handleBack() {
-        Log.d(TAG, "onClick: 点击了返回啦");
+    /**
+     * 被上面两个方法调用
+     * @see #onBackPressed()
+     * @see #onClick(View)
+     * 处理fragment的返回事件的具体细节，避免代码重复
+     * @return true 表示处理过了，false 表示不处理交由上层处理
+     */
+    // 返回事件的响应 调用这个方法时currentLevel不会是LEVEL_PROVINCE
+    private boolean handleBack() {
+        Log.d(TAG, "handleBack: 开始执行返回前的收尾工作啦");
+        Log.d(TAG, "handleBack: 取消所有网络请求呀");
+        if (HttpUtil.requestCount > 0) {
+            HttpUtil.client.dispatcher().cancelAll();
+        }
         // 清屏并显示进度条
         dataList.clear();
         adapter.notifyDataSetChanged();
         showProgressBar();
+        Log.d(TAG, "handleBack: 清屏和显示进度条完成啦");
+        if (HttpUtil.requestCount > 0) {
+            HttpUtil.client.dispatcher().cancelAll();
+            HttpUtil.requestCount = 0;
+            if (currentLevel == LEVEL_PROVINCE) {
+                // 现在在省级页面正在查询市级数据\
+                queryProvinces();
+                return true;
+            } else if (currentLevel == LEVEL_CITY) {
+                // 现在在市级页面正在查询县级数据
+                queryCities();
+                return true;
+            }
+        }
         if (currentLevel == LEVEL_COUNTY) {
             queryCities();
         } else if (currentLevel == LEVEL_CITY) {
             queryProvinces();
         }
+        return true;
     }
 
     // 查询全国所有的省，优先从数据库查询，如果没有查询到再去服务器上查询
@@ -176,7 +197,7 @@ public class ChooseAreaFragment extends Fragment implements FragmentBackHandler,
             // 为什么要设置已选中？
             listView.setSelection(0);
             currentLevel = LEVEL_PROVINCE;
-            closeProgressBar();
+            progressBar.setVisibility(View.GONE);
         } else {
             Log.d(TAG, "queryProvinces: 从网络查询省级数据啦");
             String address = "http://guolin.tech/api/china";
@@ -186,6 +207,7 @@ public class ChooseAreaFragment extends Fragment implements FragmentBackHandler,
 
     // 查询选中省中所有的市，优先从数据库查询，如果没有查询到再去服务器上查询
     private void queryCities() {
+        Log.d(TAG, "queryCities: 查询市级数据啦");
         titleText.setText(selectedProvince.getProvinceName());
         backButton.setVisibility(View.VISIBLE);
         cityList = DataSupport.where("provinceid = ?", String.valueOf(selectedProvince.getId())).find(City.class);
@@ -198,7 +220,7 @@ public class ChooseAreaFragment extends Fragment implements FragmentBackHandler,
             adapter.notifyDataSetChanged();
             listView.setSelection(0);
             currentLevel = LEVEL_CITY;
-            closeProgressBar();
+            progressBar.setVisibility(View.GONE);
         } else {
             Log.d(TAG, "queryCities: 从网络查询市级数据啦");
             int provinceCode = selectedProvince.getProvinceCode();
@@ -221,7 +243,7 @@ public class ChooseAreaFragment extends Fragment implements FragmentBackHandler,
             adapter.notifyDataSetChanged();
             listView.setSelection(0);
             currentLevel = LEVEL_COUNTY;
-            closeProgressBar();
+            progressBar.setVisibility(View.GONE);
         } else {
             Log.d(TAG, "queryCounties: 从网络查询县级数据啦");
             int provinceCode = selectedProvince.getProvinceCode();
@@ -235,19 +257,33 @@ public class ChooseAreaFragment extends Fragment implements FragmentBackHandler,
     private void queryFromServer(final String address, final String type) {
         HttpUtil.sendOkHttpRequest(address, new Callback() {
             @Override
-            public void onFailure(Call call, IOException e) {
+            public void onFailure(@NonNull Call call,@NonNull IOException e) {
+                if (call.isCanceled()) {
+                    Log.d(TAG, "onFailure: 取消网络请求啦");
+                    return;
+                }
                 Log.e(TAG, "onFailure: 从服务器请求并解析异常啦", e);
                 // 通过runOnUiThread()方法回到主线程处理逻辑
                 getActivity().runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        Toast.makeText(getContext(), "从服务器请求并解析异常啦", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getActivity(), "从服务器请求并解析异常啦", Toast.LENGTH_SHORT).show();
                     }
                 });
+                if (currentLevel == LEVEL_PROVINCE) {
+                    getActivity().finish();
+                } else if (currentLevel == LEVEL_CITY) {
+                    getActivity().runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            queryProvinces();
+                        }
+                    });
+                }
             }
 
             @Override
-            public void onResponse(Call call, Response response) throws IOException {
+            public void onResponse(@NonNull Call call,@NonNull Response response) throws IOException {
                 Log.d(TAG, "onResponse: 发送的网络请求得到相应啦" + address);
                 String responseText = response.body().string();
                 boolean result = false;
@@ -282,11 +318,5 @@ public class ChooseAreaFragment extends Fragment implements FragmentBackHandler,
     private void showProgressBar() {
         progressBar.setProgress(0);
         progressBar.setVisibility(View.VISIBLE);
-    }
-
-    // 关闭进度对话框
-    private void closeProgressBar() {
-        progressBar.setProgress(1);
-        progressBar.setVisibility(View.GONE);
     }
 }
