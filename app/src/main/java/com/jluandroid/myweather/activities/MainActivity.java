@@ -1,6 +1,8 @@
 package com.jluandroid.myweather.activities;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -15,6 +17,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        /*
         Button button = findViewById(R.id.test_button);
         button.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -22,8 +25,16 @@ public class MainActivity extends AppCompatActivity {
                 ChoosePositionActivity.activityStartForResult(MainActivity.this);
             }
         });
+        */
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
+        if (preferences.getString("weather", null) != null) {
+            Intent intent = new Intent(MainActivity.this, WeatherActivity.class);
+            startActivity(intent);
+            finish();
+        }
     }
 
+    /*
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         switch (requestCode) {
@@ -38,4 +49,5 @@ public class MainActivity extends AppCompatActivity {
                 break;
         }
     }
+    */
 }

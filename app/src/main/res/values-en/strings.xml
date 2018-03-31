@@ -3,4 +3,16 @@
     <string name="app_name">EnWeather</string>
     <string name="back">Back</string>
     <string name="china">China</string>
+    <string name="forecast">Forecast</string>
+    <string name="air_quality">Air quality</string>
+    <string name="aqi">Air Quality Index</string>
+    <string name="pm25index">PM2.5 Index</string>
+    <string name="life_advice">Life Advice</string>
+    <string name="language">en</string>
+    <string name="toast_requestFailed">Request for weather info failed.</string>
+    <string name="temperatureUnit">℃</string>
+    <string name="hourly">Hourly</string>
+    <string name="day">Day :</string>
+    <string name="night">Night :</string>
+    <string name="comfort">Comfort</string>
 </resources>

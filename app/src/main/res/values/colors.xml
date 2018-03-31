@@ -4,6 +4,7 @@
     <color name="colorPrimaryDark">#D13438</color>
     <color name="colorAccent">#4C4A48</color>
     <color name="colorWhite">#fff</color>
+    <color name="colorTranslucent">#8000</color>
     <!--
     原来的颜色
     <color name="colorPrimary">#3F51B5</color>

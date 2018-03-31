@@ -19,6 +19,8 @@ import android.widget.Toast;
 
 import com.jluandroid.myweather.R;
 import com.jluandroid.myweather.activities.ChoosePositionActivity;
+import com.jluandroid.myweather.activities.MainActivity;
+import com.jluandroid.myweather.activities.WeatherActivity;
 import com.jluandroid.myweather.db.City;
 import com.jluandroid.myweather.db.County;
 import com.jluandroid.myweather.db.Province;
@@ -109,10 +111,18 @@ public class ChooseAreaFragment extends Fragment implements FragmentBackHandler,
                                     + selectedCity.getCityName() + " "
                                     + countyList.get(position).getCountyName();
                     Log.d(TAG, "onItemClick: result的值是" + result + "呀");
+                    String weatherId = countyList.get(position).getWeatherId();
+                    Log.d(TAG, "onItemClick: weatherId的值是" + weatherId + "呀");
+                    Intent intent = new Intent(getActivity(), WeatherActivity.class);
+                    intent.putExtra("weather_id", weatherId);
+                    startActivity(intent);
+                    getActivity().finish();
+                    /*
                     Intent intent = new Intent();
                     intent.putExtra(String.valueOf((ChoosePositionActivity.GET_POSITION_STRING)), result);
                     getActivity().setResult(RESULT_OK, intent);
                     getActivity().finish();
+                    */
                 }
             }
         });
